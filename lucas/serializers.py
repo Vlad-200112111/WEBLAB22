@@ -4,6 +4,8 @@ from lucas.models import Product, Cart
 
 
 class ProductsSerializer(serializers.ModelSerializer):
+    # carts
+
     class Meta:
         model = Product
         fields = ['id', 'path_img', 'name', 'price', 'old_price']
@@ -14,5 +16,5 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['id', 'path_img', 'name', 'price', 'old_price']
+        fields = ['id', 'product']
 
