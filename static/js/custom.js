@@ -1,5 +1,15 @@
+const cart = document.getElementById("cart")
+const mainPriceEl = document.getElementById('mainPrice')
+const qty = document.getElementById('qty')
+
 document.addEventListener('DOMContentLoaded', () => {
-        updateCart()
+        if (window.localStorage.getItem('token')) {
+            updateCart()
+        } else {
+            cart.innerHTML = "<h4>Необходимо авторизоваться</h4>"
+            mainPriceEl.innerHTML = ""
+            qty.innerHTML = '0'
+        }
     }
 )
 
@@ -14,7 +24,8 @@ products.forEach((item) => {
                 fetch(`http://127.0.0.1:8000/api/v1/cart/create/`, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json;charset=utf-8'
+                            'Content-Type': 'application/json;charset=utf-8',
+                            'Authorization': `Token ${window.localStorage.getItem('token')}`
                         },
                         body: JSON.stringify(
                             {
@@ -30,12 +41,17 @@ products.forEach((item) => {
 
 
 function updateCart() {
-    fetch(`http://127.0.0.1:8000/api/v1/cart/`)
+    fetch(
+        `http://127.0.0.1:8000/api/v1/cart/`,
+        {
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'Authorization': `Token ${window.localStorage.getItem('token')}`
+            },
+        }
+    )
         .then(resp => resp.json())
         .then(async (data) => {
-                let cart = document.getElementById("cart")
-                let mainPriceEl = document.getElementById('mainPrice')
-                let qty = document.getElementById('qty')
 
                 cart.innerHTML = ``
 
@@ -51,13 +67,13 @@ function updateCart() {
                         html += `
                                     <div class="product-widget">
                                         <div class="product-img">
-                                            <img src="./static/img/${responseData.path_img}" alt="">
+                                            <img src="${responseData.path_img}" alt="">
                                         </div>
                                         <div class="product-body">
                                             <h3 class="product-name"><a href="#">${responseData.name}</a></h3>
                                             <h4 class="product-price"><span class="qty">1x</span>${responseData.price}</h4>
                                         </div>
-                                        <button onclick="deleteItemCart(${responseData.id})" class="delete"><i class="fa fa-close"></i></button>
+                                        <button onclick="deleteItemCart(${item.id})" class="delete"><i class="fa fa-close"></i></button>
                                     </div>
                                     `
                         count += 1
@@ -76,8 +92,29 @@ function updateCart() {
 function deleteItemCart(id) {
     fetch(`http://127.0.0.1:8000/api/v1/cart/${id}`, {
             method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'Authorization': `Token ${window.localStorage.getItem('token')}`
+            },
         }
     )
         .then(r => console.log(r.json()))
         .then(res => updateCart())
+}
+
+async function authorization(event) {
+    event.preventDefault()
+    const formData = new FormData(event.target)
+
+    const data = await fetch(
+        `http://127.0.0.1:8000/token/`,
+        {
+            method: "POST",
+            body: formData
+        }
+    )
+
+    const token = await data.json()
+    window.localStorage.setItem("token", token.token)
+    updateCart()
 }

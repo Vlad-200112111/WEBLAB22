@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from lucas.models import Product, Cart
+from .models import Product, Cart, Profile
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['__all__']
 
 
 class ProductsSerializer(serializers.ModelSerializer):
@@ -12,9 +18,8 @@ class ProductsSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    # product = ProductsSerializer(many=True, read_only=True)
 
     class Meta:
         model = Cart
-        fields = ['id', 'product']
+        fields = ['id', 'product', 'profile']
 

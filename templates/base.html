@@ -104,34 +104,13 @@
                             <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
                                 <i class="fa fa-shopping-cart"></i>
                                 <span>Your Cart</span>
-                                <div id="qty" class="qty">3</div>
+                                <div id="qty" class="qty">0</div>
                             </a>
                             <div class="cart-dropdown">
                                 <div id="cart" class="cart-list">
-                                    <div class="product-widget">
-                                        <div class="product-img">
-                                            <img src="./static/img/product01.png" alt="">
-                                        </div>
-                                        <div class="product-body">
-                                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                            <h4 class="product-price"><span class="qty">1x</span>$980.00</h4>
-                                        </div>
-                                        <button class="delete"><i class="fa fa-close"></i></button>
-                                    </div>
 
-                                    <div class="product-widget">
-                                        <div class="product-img">
-                                            <img src="./static/img/product02.png" alt="">
-                                        </div>
-                                        <div class="product-body">
-                                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                            <h4 class="product-price"><span class="qty">3x</span>$980.00</h4>
-                                        </div>
-                                        <button class="delete"><i class="fa fa-close"></i></button>
-                                    </div>
                                 </div>
                                 <div class="cart-summary">
-                                    <small>3 Item(s) selected</small>
                                     <h5 id="mainPrice">SUBTOTAL: $2940.00</h5>
                                 </div>
                                 <div class="cart-btns">
@@ -232,11 +211,25 @@
                 </div>
             </div>
             <!-- /row -->
+            <div class="m-2">
+                <form onsubmit="authorization(event)">
+                    <div class="row">
+                        <div class="col-5">
+                            <input class="input" name="username" type="text" placeholder="Enter Login">
+                        </div>
+                        <div class="col-5">
+                            <input class="input" name="password" type="password" placeholder="Enter Password">
+                        </div>
+                        <div class="col-2">
+                            <button type="submit">Enter</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
         <!-- /container -->
     </div>
     <!-- /top footer -->
-
     <!-- bottom footer -->
     <div id="bottom-footer" class="section">
         <div class="container">
