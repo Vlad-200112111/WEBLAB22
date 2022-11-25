@@ -1,6 +1,7 @@
 const cart = document.getElementById("cart")
 const mainPriceEl = document.getElementById('mainPrice')
 const qty = document.getElementById('qty')
+const products_slick = document.getElementById('products_slick')
 
 document.addEventListener('DOMContentLoaded', () => {
         if (window.localStorage.getItem('token')) {
@@ -89,6 +90,78 @@ function updateCart() {
         )
 }
 
+async function selectCategory(id) {
+    const data = await fetch(`http://127.0.0.1:8000/api/v1/product/${id}/categories`)
+    const productsByCategory = await data.json()
+    let html = ``
+    for (const item of productsByCategory) {
+        html += `
+        <div class="product">
+            <div class="product-img">
+                <img src="${item.path_img}" alt="">
+            </div>
+            <div class="product-body">
+                <p class="product-category">Category</p>
+                <h3 class="product-name"><a href="#">${item.name}</a></h3>
+                <h4 class="product-price">${item.price}
+                    <del class="product-old-price">${item.old_price}</del>
+                </h4>
+                <div class="product-rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                </div>
+                <div class="product-btns">
+                    <button class="add-to-wishlist"><i class="fa fa-heart-o"></i><span
+                            class="tooltipp">add to wishlist</span></button>
+                    <button class="add-to-compare"><i class="fa fa-exchange"></i><span
+                            class="tooltipp">add to compare</span></button>
+                    <button class="quick-view"><i class="fa fa-eye"></i><span class="tooltipp">quick view</span>
+                    </button>
+                </div>
+            </div>
+            <div class="add-to-cart">
+                <button class="add-to-cart-btn" data-id={{ item.id }}><i class="fa fa-shopping-cart"></i>
+                    add to cart
+                </button>
+            </div>
+        </div>
+        `
+    }
+    products_slick.innerHTML = html
+
+    let $this = $(products_slick),
+        $nav = $this.attr('data-nav');
+
+    $this.slick({
+        slidesToShow: 4,
+        slidesToScroll: 1,
+        autoplay: true,
+        infinite: true,
+        speed: 300,
+        dots: false,
+        arrows: true,
+        appendArrows: $nav ? $nav : false,
+        responsive: [{
+            breakpoint: 991,
+            settings: {
+                slidesToShow: 2,
+                slidesToScroll: 1,
+            }
+        },
+            {
+                breakpoint: 480,
+                settings: {
+                    slidesToShow: 1,
+                    slidesToScroll: 1,
+                }
+            },
+        ]
+    });
+}
+
 function deleteItemCart(id) {
     fetch(`http://127.0.0.1:8000/api/v1/cart/${id}`, {
             method: 'DELETE',
@@ -117,4 +190,25 @@ async function authorization(event) {
     const token = await data.json()
     window.localStorage.setItem("token", token.token)
     updateCart()
+}
+
+
+async function orderFunction(event) {
+    event.preventDefault()
+    const formData = new FormData(event.target)
+    const data = formData.getAll('carts')
+    for(let i = 0; i < data.length; i++) {
+        fetch(
+        `http://127.0.0.1:8000/api/v1/checkout/create/`, {
+            method: "POST",
+            body: JSON.stringify({
+                carts: data[i]
+            }),
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'Authorization': `Token ${window.localStorage.getItem('token')}`
+            },
+        }
+    ).then(r => console.log(r.json()))
+    }
 }

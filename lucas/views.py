@@ -1,9 +1,10 @@
+from django.db.models import Sum
 from django.views.generic import TemplateView
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Product, Cart
-from .serializers import ProductsSerializer, CartSerializer
+from .models import Product, Cart, Category, Checkout
+from .serializers import ProductsSerializer, CartSerializer, CheckoutSerializer
 
 
 class IndexView(TemplateView):
@@ -12,6 +13,17 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['products'] = Product.objects.all()
+        context['category'] = Category.objects.all()
+        return context
+
+
+class CheckoutView(TemplateView):
+    template_name = 'checkout.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['carts'] = Cart.objects.all().filter(profile_id=self.request.user.id)
+        context['price'] = Cart.objects.all().filter(profile_id=self.request.user.id).aggregate(Sum('product__price'))
         return context
 
 
@@ -36,6 +48,16 @@ class ProductListAPIView(generics.ListAPIView):
     serializer_class = ProductsSerializer
 
 
+class ProductListByCatAPIView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductsSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = Product.objects.all()
+        queryset = queryset.filter(category_id=self.kwargs['pk'], news=True)
+        return queryset
+
+
 class CartListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CartSerializer
@@ -48,6 +70,21 @@ class CartListAPIView(generics.ListAPIView):
 
 class ProductCreateAPIView(generics.CreateAPIView):
     serializer_class = ProductsSerializer
+
+
+class CheckoutCreateAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CheckoutSerializer
+
+
+class CheckoutListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CheckoutSerializer
+
+    # def get_queryset(self):
+    #     queryset = Checkout.objects.all()
+    #     queryset = queryset.filter(profile_id=self.request.user.id)
+    #     return queryset
 
 
 class CartCreateAPIView(generics.CreateAPIView):
