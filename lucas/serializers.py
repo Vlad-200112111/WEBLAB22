@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Product, Cart, Profile, Checkout
+from .models import Product, Cart, Profile, Checkout, BillingAddress, BillingAddressCheckout
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -29,3 +29,14 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['id', 'product', 'profile']
 
+
+class BillingAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillingAddress
+        fields = '__all__'
+
+class BillingAddressCheckoutSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BillingAddressCheckout
+        fields = '__all__'

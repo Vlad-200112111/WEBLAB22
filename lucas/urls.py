@@ -1,7 +1,8 @@
 from django.urls import path
 
 from lucas.views import CartAPIView, CartListAPIView, ProductCreateAPIView, CartCreateAPIView, \
-    ProductListAPIView, ProductAPIView, ProductListByCatAPIView, CheckoutCreateAPIView
+    ProductListAPIView, ProductAPIView, ProductListByCatAPIView, CheckoutCreateAPIView, BillingAddressCreateAPIView, \
+    BillingAddressCheckoutCreateApiView
 
 app_name = 'lucas'
 
@@ -14,4 +15,6 @@ urlpatterns = [
     path('product/create/', ProductCreateAPIView.as_view()),
     path('cart/create/', CartCreateAPIView.as_view()),
     path('checkout/create/', CheckoutCreateAPIView.as_view()),
+    path('billing-address/create/', BillingAddressCreateAPIView.as_view()),
+    path('billing-address-checkout/create/', BillingAddressCheckoutCreateApiView.as_view()),
 ]

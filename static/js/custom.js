@@ -197,18 +197,63 @@ async function orderFunction(event) {
     event.preventDefault()
     const formData = new FormData(event.target)
     const data = formData.getAll('carts')
-    for(let i = 0; i < data.length; i++) {
-        fetch(
-        `http://127.0.0.1:8000/api/v1/checkout/create/`, {
+    let ArrForData = []
+    for (let i = 0; i < data.length; i++) {
+        const dataFromBackend = await fetch(
+            `http://127.0.0.1:8000/api/v1/checkout/create/`, {
+                method: "POST",
+                body: JSON.stringify({
+                    carts: data[i]
+                }),
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'Authorization': `Token ${window.localStorage.getItem('token')}`
+                },
+            }
+        )
+        const result = await dataFromBackend.json()
+        ArrForData.push(result.id)
+    }
+    const dataBillingAddress = new FormData(document.getElementById('BillingAddress'))
+    const dataFromDataBillingAddress = await fetch(`http://127.0.0.1:8000/api/v1/billing-address/create/`,
+        {
             method: "POST",
-            body: JSON.stringify({
-                carts: data[i]
-            }),
+            body: JSON.stringify(
+                {
+                    country: dataBillingAddress.get('country'),
+                    city: dataBillingAddress.get('city'),
+                    first_name: dataBillingAddress.get('first_name'),
+                    last_name: dataBillingAddress.get('last_name'),
+                    email: dataBillingAddress.get('email'),
+                    address: dataBillingAddress.get('address'),
+                    zip_code: dataBillingAddress.get('zip_code'),
+                    phone: dataBillingAddress.get('phone'),
+                    order_notes: dataBillingAddress.get('order_notes'),
+                }
+            ),
             headers: {
                 'Content-Type': 'application/json;charset=utf-8',
                 'Authorization': `Token ${window.localStorage.getItem('token')}`
             },
         }
-    ).then(r => console.log(r.json()))
+    )
+
+    const resultBillingAddress = await dataFromDataBillingAddress.json()
+
+    for (let i = 0; i < ArrForData.length; i++) {
+        await fetch(`http://127.0.0.1:8000/api/v1/billing-address-checkout/create/`,
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    billing_address: resultBillingAddress.id,
+                    checkout: ArrForData[i]
+                }),
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8',
+                    'Authorization': `Token ${window.localStorage.getItem('token')}`
+                },
+            }
+        )
     }
+
 }
