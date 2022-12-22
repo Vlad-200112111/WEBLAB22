@@ -15,30 +15,24 @@ document.addEventListener('DOMContentLoaded', () => {
 )
 
 
-let products = document.querySelectorAll('.add-to-cart-btn');
-
-products.forEach((item) => {
-
-        item.addEventListener('click', (event) => {
-                let productId = event.target.dataset.id
-
-                fetch(`http://127.0.0.1:8000/api/v1/cart/create/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json;charset=utf-8',
-                            'Authorization': `Token ${window.localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify(
-                            {
-                                product: productId,
-                            }
-                        )
-                    }
-                ).then(r => updateCart())
-            }
-        )
-    }
-)
+function CreateCart(productId) {
+    let count_product = document.getElementById('count_product')
+    let count = count_product ? count_product.value : 1
+    fetch(`http://127.0.0.1:8000/api/v1/cart/create/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'Authorization': `Token ${window.localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(
+                {
+                    count: count,
+                    product: productId,
+                }
+            )
+        }
+    ).then(r => updateCart())
+}
 
 
 function updateCart() {
@@ -72,7 +66,7 @@ function updateCart() {
                                         </div>
                                         <div class="product-body">
                                             <h3 class="product-name"><a href="#">${responseData.name}</a></h3>
-                                            <h4 class="product-price"><span class="qty">1x</span>${responseData.price}</h4>
+                                            <h4 class="product-price"><span class="qty">Price:</span>${responseData.price}</h4>
                                         </div>
                                         <button onclick="deleteItemCart(${item.id})" class="delete"><i class="fa fa-close"></i></button>
                                     </div>
@@ -195,40 +189,22 @@ async function authorization(event) {
 
 async function orderFunction(event) {
     event.preventDefault()
-    const formData = new FormData(event.target)
-    const data = formData.getAll('carts')
-    let ArrForData = []
-    for (let i = 0; i < data.length; i++) {
-        const dataFromBackend = await fetch(
-            `http://127.0.0.1:8000/api/v1/checkout/create/`, {
-                method: "POST",
-                body: JSON.stringify({
-                    carts: data[i]
-                }),
-                headers: {
-                    'Content-Type': 'application/json;charset=utf-8',
-                    'Authorization': `Token ${window.localStorage.getItem('token')}`
-                },
-            }
-        )
-        const result = await dataFromBackend.json()
-        ArrForData.push(result.id)
-    }
-    const dataBillingAddress = new FormData(document.getElementById('BillingAddress'))
-    const dataFromDataBillingAddress = await fetch(`http://127.0.0.1:8000/api/v1/billing-address/create/`,
-        {
+    const formData = new FormData(document.getElementById('BillingAddress'))
+
+
+    const dataFromBackend = await fetch(
+        `http://127.0.0.1:8000/api/v1/order/create/`, {
             method: "POST",
             body: JSON.stringify(
                 {
-                    country: dataBillingAddress.get('country'),
-                    city: dataBillingAddress.get('city'),
-                    first_name: dataBillingAddress.get('first_name'),
-                    last_name: dataBillingAddress.get('last_name'),
-                    email: dataBillingAddress.get('email'),
-                    address: dataBillingAddress.get('address'),
-                    zip_code: dataBillingAddress.get('zip_code'),
-                    phone: dataBillingAddress.get('phone'),
-                    order_notes: dataBillingAddress.get('order_notes'),
+                    fname: formData.get('fname'),
+                    lname: formData.get('lname'),
+                    mail: formData.get('mail'),
+                    address: formData.get('address'),
+                    zipcode: formData.get('zip'),
+                    comment: formData.get('comment'),
+                    status: 1,
+                    total_sum: document.getElementById('total_sum').dataset.sum
                 }
             ),
             headers: {
@@ -237,17 +213,22 @@ async function orderFunction(event) {
             },
         }
     )
+    const result = await dataFromBackend.json()
 
-    const resultBillingAddress = await dataFromDataBillingAddress.json()
-
-    for (let i = 0; i < ArrForData.length; i++) {
-        await fetch(`http://127.0.0.1:8000/api/v1/billing-address-checkout/create/`,
-            {
+    const formDataOrderDetails = new FormData(event.target)
+    const productIds = formDataOrderDetails.getAll('product_ids')
+    const counts = formDataOrderDetails.getAll('counts')
+    for (let i = 0; i < productIds.length; i++) {
+        await fetch(
+            `http://127.0.0.1:8000/api/v1/order-details/create/`, {
                 method: "POST",
-                body: JSON.stringify({
-                    billing_address: resultBillingAddress.id,
-                    checkout: ArrForData[i]
-                }),
+                body: JSON.stringify(
+                    {
+                        order: result.id,
+                        product: productIds[i],
+                        count: counts[i]
+                    }
+                ),
                 headers: {
                     'Content-Type': 'application/json;charset=utf-8',
                     'Authorization': `Token ${window.localStorage.getItem('token')}`
@@ -255,5 +236,5 @@ async function orderFunction(event) {
             }
         )
     }
-
+    window.location.href = '/'
 }

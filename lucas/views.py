@@ -3,9 +3,8 @@ from django.views.generic import TemplateView
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Product, Cart, Category, Checkout, BillingAddress, BillingAddressCheckout
-from .serializers import ProductsSerializer, CartSerializer, CheckoutSerializer, BillingAddressSerializer, \
-    BillingAddressCheckoutSerializer
+from .models import *
+from .serializers import *
 
 
 class IndexView(TemplateView):
@@ -24,8 +23,18 @@ class CheckoutView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['carts'] = Cart.objects.all().filter(profile_id=self.request.user.id)
-        print("sssssssssssssss", Cart.objects.all().filter(profile_id=self.request.user.id))
         context['price'] = Cart.objects.all().filter(profile_id=self.request.user.id).aggregate(Sum('product__price'))
+        # count = Cart.objects.all().filter(profile_id=self.request.user.id).aggregate(Sum('count'))
+        # print(price)
+        return context
+
+
+class ProductView(TemplateView):
+    template_name = 'product.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['product'] = Product.objects.filter(id=self.kwargs['pk'])[0]
         return context
 
 
@@ -74,31 +83,18 @@ class ProductCreateAPIView(generics.CreateAPIView):
     serializer_class = ProductsSerializer
 
 
-class CheckoutCreateAPIView(generics.CreateAPIView):
+class OrderCreateAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = CheckoutSerializer
+    serializer_class = OrderSerializer
+
+    def create(self, request, *args, **kwargs):
+        request.data['profile'] = request.user.id
+        return super().create(request, *args, **kwargs)
 
 
-class CheckoutListAPIView(generics.ListAPIView):
+class OrderDetailsCreateAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = CheckoutSerializer
-
-    # def get_queryset(self):
-    #     queryset = Checkout.objects.all()
-    #     queryset = queryset.filter(profile_id=self.request.user.id)
-    #     return queryset
-
-
-class BillingAddressCreateAPIView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = BillingAddressSerializer
-    queryset = BillingAddress.objects.all()
-
-
-class BillingAddressCheckoutCreateApiView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = BillingAddressCheckoutSerializer
-    queryset = BillingAddressCheckout.objects.all()
+    serializer_class = OrderDetailSerializer
 
 
 class CartCreateAPIView(generics.CreateAPIView):

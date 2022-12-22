@@ -601,6 +601,7 @@ textarea.input {
 }
 
 .cart-dropdown .cart-btns>a:first-child {
+  width: 100%;
   margin-right: -4px;
   background-color: #1e1f29;
 }
@@ -1458,7 +1459,9 @@ textarea.input {
 }
 
 .product-preview img {
-  width: 100%;
+  width: 50%;
+  margin: auto;
+  display: block;
 }
 
 /*----------------------------*\
